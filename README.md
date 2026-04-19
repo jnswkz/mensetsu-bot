@@ -105,6 +105,58 @@ Example:
 curl "http://localhost:8000/candidate_questions?user_id=69de0d2317c28e9c3ca8b5f2&round_name=technical_screen&n=3&save=false"
 ```
 
+### `POST /audio/transcriptions`
+
+Upload an audio file and get transcript text back. The default model is `whisper-1`.
+
+```bash
+curl -X POST "http://localhost:8000/audio/transcriptions?model=whisper-1&language=en" ^
+  -F "file=@candidate-answer.webm"
+```
+
+### `POST /audio/transcriptions/stream`
+
+Upload a completed audio recording and receive server-sent transcript events. Use a streaming-capable transcription model such as `gpt-4o-mini-transcribe`.
+
+```bash
+curl -N -X POST "http://localhost:8000/audio/transcriptions/stream?model=gpt-4o-mini-transcribe&language=en" ^
+  -F "file=@candidate-answer.webm"
+```
+
+### `POST /audio/speech`
+
+Stream text-to-speech audio for any text. The response body is audio bytes, so write it to a file or pipe it to a player.
+
+```bash
+curl -X POST "http://localhost:8000/audio/speech" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"text\":\"Welcome to the interview. Let's begin.\",\"voice\":\"coral\",\"response_format\":\"mp3\"}" ^
+  --output speech.mp3
+```
+
+### `GET /candidate_questions/speech`
+
+Generate candidate interview questions using the existing question pipeline, select one by `question_index`, and stream that question as spoken audio.
+
+```bash
+curl "http://localhost:8000/candidate_questions/speech?user_id=69de0d2317c28e9c3ca8b5f2&round_name=technical_screen&n=3&question_index=0&voice=coral" ^
+  --output question.mp3
+```
+
+### SSE stream endpoints
+
+Use these when the frontend wants server-sent JSON events instead of a single JSON response:
+
+- `GET /candidate_questions_stream`
+- `GET /follow_up_questions_stream`
+- `GET /greeting_stream`
+
+Example:
+
+```bash
+curl -N "http://localhost:8000/candidate_questions_stream?user_id=69de0d2317c28e9c3ca8b5f2&round_name=technical_screen&n=3"
+```
+
 ### `GET /follow_up_questions`
 
 Generate follow-up questions from the candidate's last answer.
